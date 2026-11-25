@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>html,body{margin:0;padding:0;background:#222;overflow:hidden}canvas{display:block}</style></head>
+<body>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+import { buildCar } from '/src/car3d.js';
+
+const W = 1800, H = 1200, CW = W / 2, CH = H / 2;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H);
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x2a2d33);
+const sun = new THREE.DirectionalLight(0xffffff, 2.6); sun.position.set(0.6, 1.4, -0.8); scene.add(sun);
+const fill = new THREE.DirectionalLight(0xbfd4ff, 0.8); fill.position.set(-0.8, 0.6, 0.9); scene.add(fill);
+scene.add(new THREE.AmbientLight(0xffffff, 1.1));
+
+const car = buildCar('#3A86C3');
+scene.add(car);
+scene.add(new THREE.GridHelper(4, 40, 0x555555, 0x3a3a3a));
+
+const views = [
+  { pos: [2.0, 0.9, 1.2],  label: 'iso-side' },
+  { pos: [0.0, 0.35, 2.6], label: 'side-pure' },
+  { pos: [-2.0, 0.8, -1.4], label: 'front-threeq' },
+  { pos: [0.0, 3.0, 0.6],  label: 'top' },
+];
+const cam = new THREE.PerspectiveCamera(30, CW / CH, 0.01, 100);
+renderer.setScissorTest(true);
+views.forEach((v, i) => {
+  const x = (i % 2) * CW, y = Math.floor(i / 2) * CH;
+  renderer.setViewport(x, H - y - CH, CW, CH);
+  renderer.setScissor(x, H - y - CH, CW, CH);
+  cam.position.set(...v.pos);
+  cam.lookAt(0, 0.22, 0);
+  cam.aspect = CW / CH;
+  cam.updateProjectionMatrix();
+  renderer.render(scene, cam);
+});
+renderer.setScissorTest(false);
+window.__done = true;
+</script>
+</body>
+</html>
